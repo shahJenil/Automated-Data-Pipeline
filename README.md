@@ -1,48 +1,119 @@
-Overview
-========
+# Yelp Reviews Data Pipeline
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+## Project Overview
+This data engineering project creates an end-to-end pipeline for extracting, transforming, and analyzing Yelp restaurant reviews using modern data infrastructure technologies.
 
-Project Contents
-================
+## Technology Stack
+- **Airflow**: Orchestration of data pipeline
+- **Astronomer**: Workflow management and deployment
+- **PostgreSQL**: Data storage and persistence
+- **Tableau**: Data visualization and insights generation
+- **Poetry**: Dependency management
+- **Docker**: Containerization
 
-Your Astro project contains the following files and folders:
+## Airflow Orchestration:
+  - Manages complex workflow dependencies
+  - Provides visual representation of pipeline tasks
+  - Implements retry mechanisms and error handling
+  - Supports automated scheduling and event-driven extraction of data which is essential in automated pipelines
+  - Enables monitoring and logging of pipeline execution
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+The combination of airflow with docker allows for a modular, flexible approach to data pipeline management, where each component of the data workflow can be independently developed, tested, and deployed.
 
-Deploy Your Project Locally
-===========================
+## Data Pipeline Architecture
+1. **Data Extraction**: 
+   - Uses **SerpAPI** to fetch Yelp reviews
+   - Currently implemented to extract historical and live data from a single restaurant
 
-1. Start Airflow on your local machine by running 'astro dev start'.
+2. **Data Transformation**:
+   - Utilizes **Pandas** for data preprocessing
+   - Extracts multiple feature dimensions:
+     - Temporal features (review hour, day, month, year)
+     - Geographic features (city, state, local/non-local reviewers)
+     - Engagement metrics (photo count, feedback)
+     - Content analysis (review length, owner responses)
 
-This command will spin up 4 Docker containers on your machine, each for a different Airflow component:
+3. **Data Loading**:
+   - Loads transformed data into **PostgreSQL** database
+   - Implements upsert strategy with conflict resolution
+   - Stores rich metadata about each review
 
-- Postgres: Airflow's Metadata Database
-- Webserver: The Airflow component responsible for rendering the Airflow UI
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+## Tableau Data Visualization Integration
+**Tableau** connects directly to the **PostgreSQL** database using a live connection:
 
-2. Verify that all 4 Docker containers were created by running 'docker ps'.
+- **Database Driver**: PostgreSQL JDBC Driver
+- **Connection Type**: Live Connection
+- **Benefits**:
+  - Real-time data updates
+  - Direct query capabilities
+  - Minimal data duplication
+  - Performance optimization
 
-Note: Running 'astro dev start' will start your project with the Airflow Webserver exposed at port 8080 and Postgres exposed at port 5432. If you already have either of those ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+## Tableau Visualization Insights
+The project generates five key visualizations:
 
-3. Access the Airflow UI for your local Airflow project. To do so, go to http://localhost:8080/ and log in with 'admin' for both your Username and Password.
+1. **Review Hour vs Review Count**
+   - Identifies peak hours for customer reviews
+   - Helps understand customer engagement timing
 
-You should also be able to access your Postgres Database at 'localhost:5432/postgres'.
+2. **Review Count vs Rating**
+   - Analyzes rating distribution
+   - Provides insight into overall customer satisfaction
 
-Deploy Your Project to Astronomer
-=================================
+3. **Review Count vs State**
+   - Maps geographical review distribution
+   - Tracks inter-state customer attraction
+   - Identifies primary customer regions
 
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+4. **Local Reviewers vs Rating**
+   - Compares local resident reviews across different ratings
+   - Helps understand local customer perception
 
-Contact
-=======
+5. **User Interaction on Reviews**
+   - Tracks feedback and engagement metrics
+   - Analyzes response patterns
 
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+## Project Setup and Execution
+
+### Prerequisites
+- **Docker**
+- **Poetry**
+- **Astronomer CLI**
+- **PostgreSQL** connection
+- **SerpAPI** credentials
+
+### Installation Steps
+1. Clone the repository
+```bash
+git clone https://github.com/shahJenil/Automated-Data-Pipeline.git
+cd Automated Data Pipeline
+```
+
+2. Install dependencies
+```bash
+poetry add $(cat requirementsyelp.txt)
+```
+
+3. Set up environment variables
+- Configure **PostgreSQL** connection
+- Add **SerpAPI** credentials
+- Set up Airflow connections
+
+4. Start local development environment
+```bash
+poetry shell
+astro dev start
+```
+
+## Airflow DAG Configuration
+- **Schedule**: Hourly runs
+- **Catchup**: Disabled
+- **Tasks**: 
+  1. Extract Yelp data
+  2. Transform review data
+  3. Load to PostgreSQL
+
+## Monitoring and Logging
+- Tracks potential data anomalies
+- Logs negative response times
+- Provides comprehensive error handling
