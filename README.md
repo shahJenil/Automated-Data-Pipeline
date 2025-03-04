@@ -1,4 +1,4 @@
-![data-pipeline-diagram](https://github.com/user-attachments/assets/41fbb7ea-771b-4aef-b5f8-5901ca7ec112)# Yelp Reviews Data Pipeline
+![data-pipeline-diagram](https://github.com/user-attachments/assets/41fbb7ea-771b-4aef-b5f8-5901ca7ec112)
 
 ![Uploading<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
   <!-- Background -->
